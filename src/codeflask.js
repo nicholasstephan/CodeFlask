@@ -6,6 +6,7 @@ import Prism from 'prismjs'
 
 export default class CodeFlask {
   constructor (selectorOrElement, opts) {
+
     if (!selectorOrElement) {
       // If no selector or element is passed to CodeFlask,
       // stop execution and throw error.
@@ -100,6 +101,7 @@ export default class CodeFlask {
     this.opts.areaId = this.opts.areaId || null
     this.opts.ariaLabelledby = this.opts.ariaLabelledby || null
     this.opts.readonly = this.opts.readonly || null
+    this.opts.autoHeight = this.opts.autoHeight || null
 
     // if handleTabs is not either true or false, make it true by default
     if (typeof this.opts.handleTabs !== 'boolean') {
@@ -112,6 +114,10 @@ export default class CodeFlask {
     // if handleTabs is not either true or false, make it true by default
     if (typeof this.opts.handleNewLineIndentation !== 'boolean') {
       this.opts.handleNewLineIndentation = true
+    }
+    // if autoHeight is not either true or false, make it true by default
+    if (typeof this.opts.autoHeight !== 'boolean') {
+      this.opts.autoHeight = false
     }
 
     if (this.opts.rtl === true) {
@@ -166,6 +172,7 @@ export default class CodeFlask {
       setTimeout(() => {
         this.runUpdate()
         this.setLineNumber()
+        this.setHeight();
       }, 1)
     })
 
@@ -177,13 +184,15 @@ export default class CodeFlask {
       this.handleSelfClosingCharacters(e)
       this.handleNewLineIndentation(e)
     })
-
-    this.elTextarea.addEventListener('scroll', (e) => {
-      this.elPre.style.transform = `translate3d(-${e.target.scrollLeft}px, -${e.target.scrollTop}px, 0)`
-      if (this.elLineNumbers) {
-        this.elLineNumbers.style.transform = `translate3d(0, -${e.target.scrollTop}px, 0)`
-      }
-    })
+    
+    if(!this.opts.autoHeight) {
+      this.elTextarea.addEventListener('scroll', (e) => {
+        this.elPre.style.transform = `translate3d(-${e.target.scrollLeft}px, -${e.target.scrollTop}px, 0)`
+        if (this.elLineNumbers) {
+          this.elLineNumbers.style.transform = `translate3d(0, -${e.target.scrollTop}px, 0)`
+        }
+      })
+    }
   }
 
   handleTabs (e) {
@@ -309,6 +318,14 @@ export default class CodeFlask {
     }
   }
 
+  setHeight () {
+    if(!this.opts.autoHeight) {
+      return;
+    }
+    let height = this.code.split('\n').length * 20 + 20;
+    this.elWrapper.style.height = `${height}px`;
+  }
+
   handleNewLineIndentation (e) {
     if (!this.opts.handleNewLineIndentation) return
     if (e.keyCode !== 13) {
@@ -380,6 +397,7 @@ export default class CodeFlask {
     this.elCode.innerHTML = escapeHtml(newCode)
     this.highlight()
     this.setLineNumber()
+    this.setHeight()
     setTimeout(this.runUpdate.bind(this), 1)
   }
 

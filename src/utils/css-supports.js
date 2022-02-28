@@ -1,5 +1,5 @@
 export function cssSupports (property, value) {
-  if (typeof CSS !== 'undefined') {
+  if (typeof window.CSS !== 'undefined') {
     return CSS.supports(property, value)
   }
 
